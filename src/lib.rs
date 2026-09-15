@@ -28,6 +28,8 @@ pub fn process_instruction(
         EscrowInstructions::Make => instructions::process_make_instruction(accounts, data)?,
         // TODO (challenge): EscrowInstructions::Take and EscrowInstructions::Cancel
         EscrowInstructions::Take => instructions::process_take_instructions(accounts )?,
+
+        EscrowInstructions::Cancel => instructions::process_cancel_instruction(accounts)?,
         _ => return Err(ProgramError::InvalidInstructionData),
     }
     Ok(())
