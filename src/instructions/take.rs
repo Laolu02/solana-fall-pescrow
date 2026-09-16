@@ -25,8 +25,9 @@ pub fn process_take_instructions (accounts: &mut [AccountView]) -> Result<(), Pr
         taker_ata_a,
         taker_ata_b,
         maker_ata_b,
-        token_program,
         system_program,
+        token_program,
+        _associated_token_program,
     ] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
@@ -37,7 +38,7 @@ pub fn process_take_instructions (accounts: &mut [AccountView]) -> Result<(), Pr
     }
 
     // 2. Validate the escrow account
-    if escrow_account.owned_by(&crate::ID) {
+    if !escrow_account.owned_by(&crate::ID) {
         return Err(ProgramError::InvalidAccountOwner);
     }
 
@@ -84,12 +85,23 @@ pub fn process_take_instructions (accounts: &mut [AccountView]) -> Result<(), Pr
         vault_account.amount()
     };
 
+    
     // 6. Create maker's B ATA if necessary.
     CreateIdempotent {
         funding_account: taker,
         account: maker_ata_b,
         wallet: maker,
         mint: mint_b,
+        token_program,
+        system_program,
+    }
+    .invoke()?;
+
+    CreateIdempotent {
+        funding_account: taker,
+        account: taker_ata_a,
+        wallet: taker,
+        mint: mint_a,
         token_program,
         system_program,
     }
